@@ -52,10 +52,27 @@ export function WorkspaceManager({
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(emptyForm);
   const [message, setMessage] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"All" | Workstream["status"]>("All");
+  const [highRiskOnly, setHighRiskOnly] = useState(false);
+  const [menuId, setMenuId] = useState<string | null>(null);
 
-  const filtered = workstreams.filter((item) =>
-    `${item.name} ${item.owner_name} ${item.milestone}`.toLowerCase().includes(query.toLowerCase())
-  );
+  const filtered = workstreams.filter((item) => {
+    const matchesQuery = `${item.name} ${item.owner_name} ${item.milestone}`.toLowerCase().includes(query.toLowerCase());
+    return matchesQuery && (statusFilter === "All" || item.status === statusFilter) && (!highRiskOnly || item.severity === "High");
+  });
+
+  async function deleteWorkstream(item: Workstream) {
+    setMenuId(null);
+    if (!window.confirm(`Delete ${item.name}? This cannot be undone.`)) return;
+    if (!configured) {
+      setWorkstreams((items) => items.filter((candidate) => candidate.id !== item.id));
+      return;
+    }
+    const supabase = createClient();
+    const { error } = await supabase.from("workstreams").delete().eq("id", item.id);
+    if (error) { setMessage(error.message); return; }
+    setWorkstreams((items) => items.filter((candidate) => candidate.id !== item.id));
+  }
 
   async function createWorkstream(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -106,8 +123,8 @@ export function WorkspaceManager({
       <section className="workspace-panel">
         <div className="workspace-toolbar">
           <label className="search-box large"><Search size={17} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search by workstream, milestone, or owner" /></label>
-          <button type="button"><Filter size={16} /> Status</button>
-          <button type="button"><SlidersHorizontal size={16} /> More filters</button>
+          <label className="filter-control"><Filter size={16} /><select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as typeof statusFilter)} aria-label="Workstream status"><option>All</option><option>Green</option><option>Yellow</option><option>Red</option></select></label>
+          <button type="button" className={highRiskOnly ? "filter-active" : ""} onClick={() => setHighRiskOnly((value) => !value)}><SlidersHorizontal size={16} /> {highRiskOnly ? "High risk only" : "More filters"}</button>
         </div>
 
         <div className="workspace-grid">
@@ -115,7 +132,7 @@ export function WorkspaceManager({
             <article className="workstream-card" key={item.id}>
               <div className="workstream-card-head">
                 <b className={`status-chip ${item.status.toLowerCase()}`}>{item.status}</b>
-                <button type="button" aria-label="Workstream options"><MoreHorizontal size={19} /></button>
+                <div className="card-menu-wrap"><button type="button" aria-label={`Options for ${item.name}`} aria-expanded={menuId === item.id} onClick={() => setMenuId((id) => id === item.id ? null : item.id)}><MoreHorizontal size={19} /></button>{menuId === item.id && <div className="card-menu"><button type="button" onClick={() => deleteWorkstream(item)}>Delete workstream</button></div>}</div>
               </div>
               <h2>{item.name}</h2>
               <p>{item.milestone}</p>
@@ -127,6 +144,7 @@ export function WorkspaceManager({
               </div>
             </article>
           ))}
+          {!filtered.length && <div className="workspace-empty"><strong>No matching workstreams</strong><p>Adjust the search or filters and try again.</p></div>}
         </div>
       </section>
 
