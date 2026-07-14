@@ -27,6 +27,8 @@ export function DashboardView({
   const [question, setQuestion] = useState("What needs leadership attention this week?");
   const [answer, setAnswer] = useState("");
   const [asking, setAsking] = useState(false);
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState<"All" | Workstream["status"]>("All");
 
   const stats = useMemo(() => {
     const total = workstreams.length;
@@ -37,6 +39,10 @@ export function DashboardView({
       : 0;
     return { total, red, yellow, readiness };
   }, [workstreams]);
+  const visibleWorkstreams = useMemo(() => workstreams.filter((item) => {
+    const matchesSearch = `${item.name} ${item.owner_name} ${item.milestone}`.toLowerCase().includes(search.toLowerCase());
+    return matchesSearch && (status === "All" || item.status === status);
+  }), [workstreams, search, status]);
 
   async function askMandai() {
     if (!question.trim()) return;
@@ -53,9 +59,10 @@ export function DashboardView({
         }),
       });
       const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? data.answer ?? "MANDAI could not generate an answer.");
       setAnswer(data.answer ?? "MANDAI could not generate an answer.");
-    } catch {
-      setAnswer("## MANDAI is unavailable\n\nCheck the OpenAI connection and try again.");
+    } catch (error) {
+      setAnswer(`## MANDAI is unavailable\n\n${error instanceof Error ? error.message : "Please try again in a moment."}`);
     } finally {
       setAsking(false);
     }
@@ -107,14 +114,14 @@ export function DashboardView({
 
           <div className="workstream-table-wrap">
             <div className="table-toolbar">
-              <label className="search-box"><Search size={17} /><input placeholder="Search workstreams" /></label>
-              <button type="button">All status</button>
+              <label className="search-box"><Search size={17} /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search workstreams" /></label>
+              <select className="toolbar-select" value={status} onChange={(event) => setStatus(event.target.value as typeof status)} aria-label="Filter by status"><option>All</option><option>Green</option><option>Yellow</option><option>Red</option></select>
             </div>
             <div className="workstream-table">
               <div className="table-row table-head">
                 <span>Workstream</span><span>Owner</span><span>Health</span><span>Progress</span><span>Due</span><span />
               </div>
-              {workstreams.map((item) => (
+              {visibleWorkstreams.map((item) => (
                 <div className="table-row" key={item.id}>
                   <span className="workstream-name"><i className={`status-dot ${item.status.toLowerCase()}`} /><span><strong>{item.name}</strong><small>{item.milestone}</small></span></span>
                   <span className="owner-cell"><i>{item.owner_name.split(" ").map((part) => part[0]).join("").slice(0, 2)}</i>{item.owner_name}</span>
@@ -124,6 +131,7 @@ export function DashboardView({
                   <Link className="row-link" href="/workspace" aria-label={`Open ${item.name}`}><ArrowUpRight size={17} /></Link>
                 </div>
               ))}
+              {!visibleWorkstreams.length && <div className="table-empty">No workstreams match those filters.</div>}
             </div>
           </div>
         </div>

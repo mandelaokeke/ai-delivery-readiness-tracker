@@ -58,7 +58,7 @@ export default async function DashboardPage() {
   }
 
   return (
-    <AppShell active="dashboard" organisation={organisation} userName={userName} userEmail={userEmail} configured={configured}>
+    <AppShell active="dashboard" organisation={organisation} userName={userName} userEmail={userEmail} configured={configured} workstreamCount={workstreams.length}>
       <DashboardView workstreams={workstreams} userName={userName} />
     </AppShell>
   );

@@ -37,7 +37,7 @@ export default async function WorkspacePage() {
   }
 
   return (
-    <AppShell active="workstreams" organisation={organisation} userName={userName} userEmail={userEmail} configured={configured}>
+    <AppShell active="workstreams" organisation={organisation} userName={userName} userEmail={userEmail} configured={configured} workstreamCount={workstreams.length}>
       <WorkspaceManager initialWorkstreams={workstreams} organisation={organisation} userId={userId} configured={configured} />
     </AppShell>
   );
