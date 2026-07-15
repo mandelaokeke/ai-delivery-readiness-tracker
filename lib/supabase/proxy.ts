@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { getPublicUrl } from "@/lib/public-url";
 
 export async function updateSession(request: NextRequest) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -35,16 +36,13 @@ export async function updateSession(request: NextRequest) {
     );
 
   if (!isAuthenticated && isProtected) {
-    const loginUrl = request.nextUrl.clone();
-    loginUrl.pathname = "/login";
+    const loginUrl = getPublicUrl("/login", request.headers, request.nextUrl.origin);
     loginUrl.searchParams.set("next", request.nextUrl.pathname);
     return NextResponse.redirect(loginUrl);
   }
 
   if (isAuthenticated && isAuthPage) {
-    const dashboardUrl = request.nextUrl.clone();
-    dashboardUrl.pathname = "/";
-    dashboardUrl.search = "";
+    const dashboardUrl = getPublicUrl("/", request.headers, request.nextUrl.origin);
     return NextResponse.redirect(dashboardUrl);
   }
 

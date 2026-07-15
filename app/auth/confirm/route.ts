@@ -1,14 +1,13 @@
 import { type EmailOtpType } from "@supabase/supabase-js";
 import { type NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { getPublicUrl } from "@/lib/public-url";
 
 export async function GET(request: NextRequest) {
   const tokenHash = request.nextUrl.searchParams.get("token_hash");
   const type = request.nextUrl.searchParams.get("type") as EmailOtpType | null;
   const code = request.nextUrl.searchParams.get("code");
-  const redirectTo = request.nextUrl.clone();
-  redirectTo.pathname = "/";
-  redirectTo.search = "";
+  const redirectTo = getPublicUrl("/", request.headers, request.nextUrl.origin);
 
   const supabase = await createClient();
   const result = tokenHash && type
