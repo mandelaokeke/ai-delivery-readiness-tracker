@@ -91,7 +91,7 @@ export function DashboardView({
         <article className="metric-card">
           <div className="metric-top"><span>Active workstreams</span><CheckCircle2 size={19} /></div>
           <div className="metric-main"><strong>{stats.total}</strong><span>2 due this week</span></div>
-          <p>Across one active organisation.</p>
+          <p>Across your active workspace.</p>
         </article>
         <article className="metric-card warning">
           <div className="metric-top"><span>At risk</span><Clock3 size={19} /></div>

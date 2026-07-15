@@ -4,23 +4,27 @@ import { createClient } from "@/lib/supabase/server";
 import { demoOrganisation, demoWorkstreams, type OrganisationContext, type Workstream } from "@/lib/types";
 
 export type TeamMember = { user_id: string; role: string; joined_at: string; display_name: string };
+export type AccountType = "individual" | "organisation";
 
 export async function getAppContext() {
   const configured = isSupabaseConfigured();
   let organisation: OrganisationContext = demoOrganisation;
   let workstreams: Workstream[] = demoWorkstreams;
   let userName = "Mandela Okeke";
-  let userEmail: string | undefined;
-  let userId: string | undefined;
+  let accountType: AccountType = "organisation";
   let members: TeamMember[] = [{ user_id: "demo", role: "owner", joined_at: new Date().toISOString(), display_name: userName }];
 
-  if (!configured) return { configured, organisation, workstreams, userName, userEmail, userId, members };
+  if (!configured) return { configured, organisation, workstreams, userName, userEmail: undefined, userId: undefined, members, accountType };
 
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   if (!claimsData?.claims) redirect("/login");
-  userId = String(claimsData.claims.sub);
-  userEmail = typeof claimsData.claims.email === "string" ? claimsData.claims.email : undefined;
+  const userId = String(claimsData.claims.sub);
+  const userEmail = typeof claimsData.claims.email === "string" ? claimsData.claims.email : undefined;
+  const metadata = claimsData.claims.user_metadata;
+  if (metadata && typeof metadata === "object" && "account_type" in metadata && metadata.account_type === "individual") {
+    accountType = "individual";
+  }
 
   const [{ data: profile }, { data: memberships }] = await Promise.all([
     supabase.from("profiles").select("full_name").eq("id", userId).maybeSingle(),
@@ -40,5 +44,5 @@ export async function getAppContext() {
     members = (memberData ?? []).map((member) => ({ ...member, display_name: member.user_id === userId ? userName : `Team member ${member.user_id.slice(0, 5)}` }));
   }
 
-  return { configured, organisation, workstreams, userName, userEmail, userId, members };
+  return { configured, organisation, workstreams, userName, userEmail, userId, members, accountType };
 }
