@@ -1,11 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { getPublicUrl } from "@/lib/public-url";
 
 export async function GET(request: NextRequest) {
   const code = request.nextUrl.searchParams.get("code");
-  const destination = request.nextUrl.clone();
-  destination.pathname = code ? "/update-password" : "/forgot-password";
-  destination.search = "";
+  const destination = getPublicUrl(code ? "/update-password" : "/forgot-password", request.headers, request.nextUrl.origin);
 
   if (!code) {
     destination.searchParams.set("error", "invalid-link");

@@ -1,8 +1,10 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { getPublicOrigin } from "@/lib/public-url";
 
 export type AuthState = {
   error?: string;
@@ -60,7 +62,7 @@ export async function signUp(
   }
 
   const supabase = await createClient();
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const siteUrl = getPublicOrigin(await headers());
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -94,7 +96,7 @@ export async function requestPasswordReset(
   if (!email) return { error: "Enter the email address for your account." };
 
   const supabase = await createClient();
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const siteUrl = getPublicOrigin(await headers());
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
     redirectTo: `${siteUrl}/auth/reset`,
   });
