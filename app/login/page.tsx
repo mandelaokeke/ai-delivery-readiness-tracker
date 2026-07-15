@@ -1,4 +1,4 @@
-import { Building2, ChartNoAxesCombined, ShieldCheck, Sparkles, Users } from "lucide-react";
+import { ChartNoAxesCombined, FolderKanban, ShieldCheck, Sparkles, Users } from "lucide-react";
 import { AuthPanel } from "@/components/AuthPanel";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 
@@ -15,7 +15,7 @@ export default function LoginPage() {
           <p>One secure workspace for workstream health, risks, ownership, and leadership-ready updates.</p>
           <div className="story-features">
             <div><span><ChartNoAxesCombined size={19} /></span><p><strong>Portfolio clarity</strong>See readiness and blockers at a glance.</p></div>
-            <div><span><Building2 size={19} /></span><p><strong>Organisation spaces</strong>Keep every client and team separated.</p></div>
+            <div><span><FolderKanban size={19} /></span><p><strong>Flexible workspaces</strong>Keep personal and team delivery work separated.</p></div>
             <div><span><Users size={19} /></span><p><strong>Role-based teamwork</strong>Give every user the right level of access.</p></div>
             <div><span><ShieldCheck size={19} /></span><p><strong>Secure by design</strong>Tenant-aware data policies protect every record.</p></div>
           </div>

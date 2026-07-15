@@ -90,8 +90,8 @@ export function AuthPanel({ configured }: { configured: boolean }) {
         )}
 
         <label className="input-field">
-          <span>Work email</span>
-          <div><Mail size={18} /><input name="email" type="email" placeholder="you@company.com" autoComplete="email" required /></div>
+          <span>Email address</span>
+          <div><Mail size={18} /><input name="email" type="email" placeholder="you@example.com" autoComplete="email" required /></div>
         </label>
 
         <label className="input-field">

@@ -13,8 +13,10 @@ import {
   LogOut,
   Settings,
   Sparkles,
+  UserRound,
   Users,
 } from "lucide-react";
+import type { AccountType } from "@/lib/app-context";
 import type { OrganisationContext } from "@/lib/types";
 
 type Props = {
@@ -23,6 +25,7 @@ type Props = {
   userName: string;
   userEmail?: string;
   configured: boolean;
+  accountType?: AccountType;
   workstreamCount?: number;
   children: React.ReactNode;
 };
@@ -40,6 +43,7 @@ export function AppShell({
   userName,
   userEmail,
   configured,
+  accountType = "organisation",
   workstreamCount = 0,
   children,
 }: Props) {
@@ -50,6 +54,8 @@ export function AppShell({
     .join("")
     .slice(0, 2)
     .toUpperCase();
+  const isIndividual = accountType === "individual";
+  const WorkspaceIcon = isIndividual ? UserRound : Building2;
 
   return (
     <div className="app-shell">
@@ -59,10 +65,10 @@ export function AppShell({
           <span>MANDAI</span>
         </Link>
 
-        <Link className="org-switcher" href="/settings#organisation">
-          <span className="org-icon"><Building2 size={17} /></span>
+        <Link className="org-switcher" href="/settings#workspace">
+          <span className="org-icon"><WorkspaceIcon size={17} /></span>
           <span className="org-copy">
-            <small>Organisation</small>
+            <small>{isIndividual ? "Personal workspace" : "Organisation"}</small>
             <strong>{organisation.name}</strong>
           </span>
           <ChevronDown size={16} />
